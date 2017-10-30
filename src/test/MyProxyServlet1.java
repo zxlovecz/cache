@@ -38,6 +38,8 @@ public class MyProxyServlet1 extends AsyncProxyServlet {
 	static long totalCacheBytes = 0;
 	boolean fileFlag = true;
 
+	
+	
 	@Override
 	protected StreamWriter newWriteListener(HttpServletRequest request, Response proxyResponse) {
 		// TODO Auto-generated method stub
