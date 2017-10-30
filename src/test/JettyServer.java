@@ -63,11 +63,11 @@ public class JettyServer {
 		//ServletHandler handler = new ServletHandler();
 		//server.setHandler(handler);
 		
-		AsyncProxyServlet servlet = new MyProxyServlet();
+		AsyncProxyServlet servlet = new MyProxyServlet1();
 		String downloadPath = "D:\\Program Files\\apache-tomcat-8.5.5\\webapps\\cache";
 		String logPath = "C:\\Users\\Administrator\\workspace\\jetty_mec\\logs";
-		((MyProxyServlet) servlet).fileOperation(downloadPath);
-		((MyProxyServlet) servlet).countPopularity(logPath);
+		((MyProxyServlet1) servlet).fileOperation(downloadPath);
+		((MyProxyServlet1) servlet).countPopularity(logPath);
 		servlet.setTimeout(30000);
 		ServletHolder proxyServletHolder = new ServletHolder(servlet);
 		proxyServletHolder.setAsyncSupported(true);

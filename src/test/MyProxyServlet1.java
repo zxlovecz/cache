@@ -10,7 +10,6 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,23 +26,17 @@ import org.eclipse.jetty.client.api.Response;
 import org.eclipse.jetty.proxy.AsyncProxyServlet;
 import org.eclipse.jetty.server.handler.ContextHandler.StaticContext;
 
-public class MyProxyServlet extends AsyncProxyServlet {
+public class MyProxyServlet1 extends AsyncProxyServlet {
 
 	static HashMap<String, File> hashMapFile = new HashMap<>();
 	static HashMap<String, Integer> hashMapFilePopularity = new HashMap<>();
 	static HashMap<String, Long> hashMapFileLatestTime = new HashMap<>();
-	static HashMap<String, List> hashMapAdrr = new HashMap<>();
-	String urlForDL = "http://10.108.147.170:8080/dash2/";
+	String urlForDL = "http://localhost:8080/dash2/";
 	String urlForCache = "http://localhost:8080/cache/";
-	String downloadPath = "F:\\apache-tomcat-8.5.23-windows-x64\\apache-tomcat-8.5.23\\webapps\\cache";
-	String logPath = "E:\\jetty_mec\\logs";
+	String downloadPath = "D:\\Program Files\\apache-tomcat-8.5.5\\webapps\\cache";
+	String logPath = "C:\\Users\\Administrator\\workspace\\jetty_mec\\logs";
 	static long totalCacheBytes = 0;
 	boolean fileFlag = true;
-	long Timestamp1;
-	long Timestamp2;
-	int num=0;
-	int state=0;
-	List<Long> intervalList = new ArrayList<>();
 
 	@Override
 	protected StreamWriter newWriteListener(HttpServletRequest request, Response proxyResponse) {
@@ -53,57 +46,11 @@ public class MyProxyServlet extends AsyncProxyServlet {
 
 	@Override
 	protected String rewriteTarget(HttpServletRequest request) {
-		String addr=request.getRemoteAddr();
 		String getRequestURL = request.getRequestURI().replace("/", "");
-		
-		long timeInterval;
 		/*
 		 * for (String name:hashMapFilePopularity.keySet()) {
 		 * System.out.println(name+"  "+hashMapFilePopularity.get(name)); }
 		 */
-		/*System.out.println(getRequestURL.split("\\.")[getRequestURL.split("\\.").length - 1].indexOf("4"));*/
-		if (getRequestURL.split("\\.")[getRequestURL.split("\\.").length - 1].indexOf("4") != -1) {
-		if((getRequestURL.split("\\.")[0].split("_")[1]).indexOf("p")!=-1)
-		{
-		num++;
-		if(num%2==1)
-			Timestamp1=System.currentTimeMillis( );
-		else 
-			Timestamp2=System.currentTimeMillis( );
-			if(Timestamp1-Timestamp2>=0)
-				{timeInterval=Timestamp1-Timestamp2;
-				System.out.println("timeInterval: "+ timeInterval);
-				if(timeInterval<5000)
-				intervalList.add(timeInterval);}
-			else
-				{timeInterval=Timestamp2-Timestamp1;
-				System.out.println("timeInterval: "+ timeInterval);
-				if(timeInterval<5000)
-				intervalList.add(timeInterval);}
-		}
-		}
-		if(intervalList.size()==3)
-		{
-			for (int i=0;i<intervalList.size();i++) {            //也可以改写for(int i=0;i<list.size();i++)这种形式
-				System.out.println("intervalList");
-		        System.out.println(intervalList.get(i));
-		     }
-
-			if(Collections.max(intervalList)<1000&&Collections.max(intervalList)-Collections.min(intervalList)<500)
-				{
-				state=0;
-				intervalList.clear();
-				}
-			else if(Collections.max(intervalList)>2000&&Collections.max(intervalList)-Collections.min(intervalList)>2000)
-			{ 
-			}
-			else if(Collections.max(intervalList)>2000&&Collections.max(intervalList)-Collections.min(intervalList)<2000)
-			{
-				state=1;
-				intervalList.clear();
-			}
-				}
-				
 		if (!hashMapFilePopularity.containsKey(getRequestURL)) {
 			hashMapFilePopularity.put(getRequestURL, 1);
 		} else {
@@ -126,12 +73,10 @@ public class MyProxyServlet extends AsyncProxyServlet {
 			if (fileFlag) {
 				new Thread(new Runnable() {
 					public void run() {
-					
+						String fileForPrefetch=getRequestURL;
 						if (getRequestURL.split("\\.")[getRequestURL.split("\\.").length - 1].indexOf("4") != -1) {
-							/*getInternetRes("F:\\apache-tomcat-8.5.23-windows-x64\\apache-tomcat-8.5.23\\webapps\\cache", return_URL,
-								getRequestURL);*/
-							prefetchRes("F:\\apache-tomcat-8.5.23-windows-x64\\apache-tomcat-8.5.23\\webapps\\cache", urlForDL,
-									getRequestURL,state);
+							getInternetRes("D:\\Program Files\\apache-tomcat-8.5.5\\webapps\\cache", return_URL,
+								getRequestURL);
 							
 						}
 					}
@@ -239,14 +184,12 @@ public class MyProxyServlet extends AsyncProxyServlet {
 	 * @param fileName
 	 *            自定义资源名
 	 */
-	public void prefetchRes(String savepath, String resurl, String fileName, int state) {
+	public void prefetchRes(String savepath, String resurl, String fileName) {
 		URL url = null;
 		HttpURLConnection con = null;
 		InputStream in = null;
 		FileOutputStream out = null;
 		List<String> fileNameList = new ArrayList<>();
-		if(state==0)
-		{
 		if (fileName.split("\\.")[1].equals("mp4")) {
 			fileNameList.add(fileName);
 			for (int i = 1; i <= 3; i++) {
@@ -254,70 +197,40 @@ public class MyProxyServlet extends AsyncProxyServlet {
 						+ "_" + String.valueOf(i) + ".m4s");
 			}
 		} else {
-			for (int i = Integer.valueOf(fileName.split("\\.")[0].split("_")[2])*4; i <=Integer.valueOf(fileName.split("\\.")[0].split("_")[2])*4+3; i++) {
+			for (int i = 0; i <=3; i++) {
 				fileNameList.add(fileName.split("\\.")[0].split("_")[0] + "_" + fileName.split("\\.")[0].split("_")[1]
-						+ "_" + String.valueOf(i) + ".m4s");
+						+ "_" + String.valueOf(Integer.valueOf(fileName.split("\\.")[0].split("_")[2]) + i) + ".m4s");
 			}
 		}
 		
 		new Thread(new Runnable() {
 			public void run() {
 				if(!hashMapFile.containsKey(fileNameList.get(0))) {
-					download(savepath, resurl.concat(fileNameList.get(0)), fileNameList.get(0));
+					download(savepath, resurl, fileNameList.get(0));
 				}
 			}
 		}).start();
 		new Thread(new Runnable() {
 			public void run() {
 				if(!hashMapFile.containsKey(fileNameList.get(1))) {
-					download(savepath, resurl.concat(fileNameList.get(1)), fileNameList.get(1));
+					download(savepath, resurl, fileNameList.get(1));
 				}
 			}
 		}).start();
 		new Thread(new Runnable() {
 			public void run() {
 				if(!hashMapFile.containsKey(fileNameList.get(2))) {
-					download(savepath, resurl.concat(fileNameList.get(2)), fileNameList.get(2));
+					download(savepath, resurl, fileNameList.get(2));
 				}
 			}
 		}).start();
 		new Thread(new Runnable() {
 			public void run() {
 				if(!hashMapFile.containsKey(fileNameList.get(3))) {
-					download(savepath, resurl.concat(fileNameList.get(3)), fileNameList.get(3));
+					download(savepath, resurl, fileNameList.get(3));
 				}
 			}
 		}).start();
-		}
-		else
-		{
-			if (fileName.split("\\.")[1].equals("mp4")) {
-				fileNameList.add(fileName);
-				fileNameList.add(fileName.split("\\.")[0].split("_")[0] + "_" + fileName.split("\\.")[0].split("_")[1]
-						+ "_" + String.valueOf(1) + ".m4s");
-			}
-			else 
-			{
-				fileNameList.add(fileName);
-				fileNameList.add(fileName.split("\\.")[0].split("_")[0] + "_" + fileName.split("\\.")[0].split("_")[1]
-							+ "_" + String.valueOf(Integer.valueOf(fileName.split("\\.")[0].split("_")[2])+1) + ".m4s");
-				}
-			new Thread(new Runnable() {
-				public void run() {
-					if(!hashMapFile.containsKey(fileNameList.get(0))) {
-						download(savepath, resurl.concat(fileNameList.get(0)), fileNameList.get(0));
-					}
-				}
-			}).start();
-			new Thread(new Runnable() {
-				public void run() {
-					if(!hashMapFile.containsKey(fileNameList.get(1))) {
-						download(savepath, resurl.concat(fileNameList.get(1)), fileNameList.get(1));
-					}
-				}
-			}).start();
-			
-		}
 	}
 	public void download(String savepath, String resurl, String fileName) {
 		URL url = null;
