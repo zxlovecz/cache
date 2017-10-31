@@ -71,9 +71,10 @@ public class JettyServer {
 		servlet.setTimeout(30000);
 		ServletHolder proxyServletHolder = new ServletHolder(servlet);
 		proxyServletHolder.setAsyncSupported(true);
+	
+		
 		proxyServletHolder.setInitParameter("maxThreads", "100");
 		//handler.addServletWithMapping(proxyServletHolder, "/*");
-		
 		context.addServlet(proxyServletHolder, "/");
 		context.addServlet(HelloServlet.class, "/hello");
 		
