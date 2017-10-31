@@ -53,57 +53,19 @@ public class MyProxyServlet extends AsyncProxyServlet {
 
 	@Override
 	protected String rewriteTarget(HttpServletRequest request) {
-		String addr=request.getRemoteAddr();
-		String getRequestURL = request.getRequestURI().replace("/", "");
 		
-		long timeInterval;
+		String getRequestURL = request.getRequestURI().replace("/", "");
+		long start=System.currentTimeMillis();
+		stateJudge(request);
+		long end=System.currentTimeMillis();
+		System.out.println("runTime: "+(end-start));
+		System.out.println("state: "+state);
 		/*
 		 * for (String name:hashMapFilePopularity.keySet()) {
 		 * System.out.println(name+"  "+hashMapFilePopularity.get(name)); }
 		 */
 		/*System.out.println(getRequestURL.split("\\.")[getRequestURL.split("\\.").length - 1].indexOf("4"));*/
-		if (getRequestURL.split("\\.")[getRequestURL.split("\\.").length - 1].indexOf("4") != -1) {
-		if((getRequestURL.split("\\.")[0].split("_")[1]).indexOf("p")!=-1)
-		{
-		num++;
-		if(num%2==1)
-			Timestamp1=System.currentTimeMillis( );
-		else 
-			Timestamp2=System.currentTimeMillis( );
-			if(Timestamp1-Timestamp2>=0)
-				{timeInterval=Timestamp1-Timestamp2;
-				System.out.println("timeInterval: "+ timeInterval);
-				if(timeInterval<5000)
-				intervalList.add(timeInterval);}
-			else
-				{timeInterval=Timestamp2-Timestamp1;
-				System.out.println("timeInterval: "+ timeInterval);
-				if(timeInterval<5000)
-				intervalList.add(timeInterval);}
-		}
-		}
-		if(intervalList.size()==3)
-		{
-			for (int i=0;i<intervalList.size();i++) {            //也可以改写for(int i=0;i<list.size();i++)这种形式
-				System.out.println("intervalList");
-		        System.out.println(intervalList.get(i));
-		     }
-
-			if(Collections.max(intervalList)<1000&&Collections.max(intervalList)-Collections.min(intervalList)<500)
-				{
-				state=0;
-				intervalList.clear();
-				}
-			else if(Collections.max(intervalList)>2000&&Collections.max(intervalList)-Collections.min(intervalList)>2000)
-			{ 
-			}
-			else if(Collections.max(intervalList)>2000&&Collections.max(intervalList)-Collections.min(intervalList)<2000)
-			{
-				state=1;
-				intervalList.clear();
-			}
-				}
-				
+		
 		if (!hashMapFilePopularity.containsKey(getRequestURL)) {
 			hashMapFilePopularity.put(getRequestURL, 1);
 		} else {
@@ -150,6 +112,94 @@ public class MyProxyServlet extends AsyncProxyServlet {
 			System.out.println("响应目标: " + proxyResponse.getRequest() + proxyResponse.toString());
 			// System.out.println(Thread.currentThread().getId());
 		}
+	}
+	public void stateJudge(HttpServletRequest request)
+	{
+		System.out.println(request.getRemoteAddr());
+		String addr=request.getRemoteAddr();
+		String getRequestURL = request.getRequestURI().replace("/", "");
+		long timeInterval;
+		long intervalSum=0;
+		long tmpsum=0;
+		long intervalAverage=0;
+		double intervalStandardDeviation=0;
+		if(!hashMapAdrr.containsKey(addr))
+			hashMapAdrr.put(addr, new ArrayList());
+		if (getRequestURL.split("\\.")[getRequestURL.split("\\.").length - 1].indexOf("4") != -1) {
+			if((getRequestURL.split("\\.")[0].split("_")[1]).indexOf("p")!=-1)
+			{
+			num++;
+			if(num%2==1)
+				Timestamp1=System.currentTimeMillis( );
+			else 
+				Timestamp2=System.currentTimeMillis( );
+				if(Timestamp1-Timestamp2>=0)
+					{timeInterval=Timestamp1-Timestamp2;
+					System.out.println("timeInterval: "+ timeInterval);
+					if(timeInterval<5000)
+						{hashMapAdrr.get(addr).add(timeInterval);
+					    intervalList.add(timeInterval);}
+					    }
+				else
+					{timeInterval=Timestamp2-Timestamp1;
+					System.out.println("timeInterval: "+ timeInterval);
+					if(timeInterval<5000)
+						{hashMapAdrr.get(addr).add(timeInterval);
+					    intervalList.add(timeInterval);}
+					    }
+			}
+			}
+		if(hashMapAdrr.get(addr).size()>=3)
+		{
+			System.out.println(addr +" list");
+			for (int i=0;i<hashMapAdrr.get(addr).size();i++) {      
+		        System.out.println(hashMapAdrr.get(addr).get(i));
+		     }
+			List<Long> tmplist=hashMapAdrr.get(addr);
+
+			if(tmplist.get(0)>3000&&tmplist.get(1)>3000&&tmplist.get(2)>3000)
+			{
+			state=1;
+			}
+			else 
+			{
+				state=0;
+				}
+			System.out.println("change state："+state);
+			hashMapAdrr.get(addr).clear();
+			System.out.println("addr list size"+hashMapAdrr.get(addr).size());
+				}
+			/*if(intervalList.size()==3)
+			{
+				System.out.println("intervalList");
+				for (int i=0;i<intervalList.size();i++) {      
+			        System.out.println(intervalList.get(i));
+			        intervalSum+=intervalList.get(i);
+			     }
+				intervalAverage=intervalSum/intervalList.size();
+				System.out.println("平均值："+intervalAverage);
+				for(int i=0;i<intervalList.size();i++)
+				{
+					tmpsum+=(intervalList.get(i)-intervalAverage)*(intervalList.get(i)-intervalAverage);
+				}
+				intervalStandardDeviation=Math.sqrt(tmpsum);
+				System.out.println("标准差："+intervalStandardDeviation);
+
+				if(intervalList.get(0)>3000&&intervalList.get(1)>3000&&intervalList.get(2)>3000)
+					{
+					state=1;
+					}
+				else 
+				{
+					state=0;
+				}
+				System.out.println("change state："+state);
+				intervalList.clear();
+				System.out.println("intervalList size"+intervalList.size());
+				
+					}
+					*/
+		
 	}
 
 	/**
@@ -247,6 +297,7 @@ public class MyProxyServlet extends AsyncProxyServlet {
 		List<String> fileNameList = new ArrayList<>();
 		if(state==0)
 		{
+			System.out.println("此時多載4個");
 		if (fileName.split("\\.")[1].equals("mp4")) {
 			fileNameList.add(fileName);
 			for (int i = 1; i <= 3; i++) {
@@ -291,6 +342,7 @@ public class MyProxyServlet extends AsyncProxyServlet {
 		}
 		else
 		{
+			System.out.println("此時多載2個");
 			if (fileName.split("\\.")[1].equals("mp4")) {
 				fileNameList.add(fileName);
 				fileNameList.add(fileName.split("\\.")[0].split("_")[0] + "_" + fileName.split("\\.")[0].split("_")[1]
@@ -755,3 +807,5 @@ public class MyProxyServlet extends AsyncProxyServlet {
 	}
 
 }
+
+

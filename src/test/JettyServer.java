@@ -52,7 +52,7 @@ public class JettyServer {
                 + context.getServer().hashCode());
         System.out.println("Server:" + server.hashCode());
         server.join();*/
-    	Server server = new Server(8888);
+    	Server server = new Server(8885);
     	
     	  ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
           context.setContextPath("/");
@@ -63,11 +63,11 @@ public class JettyServer {
 		//ServletHandler handler = new ServletHandler();
 		//server.setHandler(handler);
 		
-		AsyncProxyServlet servlet = new MyProxyServlet1();
+		AsyncProxyServlet servlet = new MyProxyServlet();
 		String downloadPath = "D:\\Program Files\\apache-tomcat-8.5.5\\webapps\\cache";
 		String logPath = "C:\\Users\\Administrator\\workspace\\jetty_mec\\logs";
-		((MyProxyServlet1) servlet).fileOperation(downloadPath);
-		((MyProxyServlet1) servlet).countPopularity(logPath);
+		((MyProxyServlet) servlet).fileOperation(downloadPath);
+		((MyProxyServlet) servlet).countPopularity(logPath);
 		servlet.setTimeout(30000);
 		ServletHolder proxyServletHolder = new ServletHolder(servlet);
 		proxyServletHolder.setAsyncSupported(true);
