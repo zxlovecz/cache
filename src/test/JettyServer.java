@@ -65,7 +65,7 @@ public class JettyServer {
 		
 		AsyncProxyServlet servlet = new MyProxyServlet();
 		String downloadPath = "D:\\Program Files\\apache-tomcat-8.5.5\\webapps\\cache";
-		String logPath = "C:\\Users\\Administrator\\workspace\\jetty_mec\\logs";
+		String logPath = "E:\\jetty_mec\\logs";
 		((MyProxyServlet) servlet).fileOperation(downloadPath);
 		((MyProxyServlet) servlet).countPopularity(logPath);
 		servlet.setTimeout(30000);
@@ -73,7 +73,7 @@ public class JettyServer {
 		proxyServletHolder.setAsyncSupported(true);
 	
 		
-		proxyServletHolder.setInitParameter("maxThreads", "100");
+		proxyServletHolder.setInitParameter("maxThreads", "10000");
 		//handler.addServletWithMapping(proxyServletHolder, "/*");
 		context.addServlet(proxyServletHolder, "/");
 		context.addServlet(HelloServlet.class, "/hello");

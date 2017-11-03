@@ -3,10 +3,13 @@ package test;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -33,7 +36,8 @@ public class MyProxyServlet extends AsyncProxyServlet {
 	static HashMap<String, Integer> hashMapFilePopularity = new HashMap<>();
 	static HashMap<String, Long> hashMapFileLatestTime = new HashMap<>();
 	static HashMap<String, List> hashMapAdrr = new HashMap<>();
-	String urlForDL = "http://10.108.147.170:8080/dash2/";
+	String urlForDL = "http://10.108.147.170:8080/bbb/";
+	/*String urlForDL = "http://localhost:8080/Dash_test/";*/
 	String urlForCache = "http://localhost:8080/cache/";
 	String downloadPath = "F:\\apache-tomcat-8.5.23-windows-x64\\apache-tomcat-8.5.23\\webapps\\cache";
 	String logPath = "E:\\jetty_mec\\logs";
@@ -55,10 +59,7 @@ public class MyProxyServlet extends AsyncProxyServlet {
 	protected String rewriteTarget(HttpServletRequest request) {
 		
 		String getRequestURL = request.getRequestURI().replace("/", "");
-		long start=System.currentTimeMillis();
 		stateJudge(request);
-		long end=System.currentTimeMillis();
-		System.out.println("runTime: "+(end-start));
 		System.out.println("state: "+state);
 		/*
 		 * for (String name:hashMapFilePopularity.keySet()) {
@@ -81,6 +82,7 @@ public class MyProxyServlet extends AsyncProxyServlet {
 //		}
 		if (hashMapFile.containsKey(getRequestURL)) {
 			System.out.println("请求目标: " + getRequestURL + "已存在");
+			System.out.println("返回: " + urlForCache.concat(getRequestURL).toString());
 			return urlForCache.concat(getRequestURL);
 		} else {
 			String return_URL = urlForDL.concat(getRequestURL);
@@ -101,6 +103,7 @@ public class MyProxyServlet extends AsyncProxyServlet {
 			} else {
 				System.err.println("不能判断是否下载文件");
 			}
+			System.out.println("返回: " + return_URL.toString());
 			return return_URL;
 		}
 	}
@@ -109,6 +112,7 @@ public class MyProxyServlet extends AsyncProxyServlet {
 
 		protected MyStreamWriter(HttpServletRequest request, Response proxyResponse) {
 			super(request, proxyResponse);
+			
 			System.out.println("响应目标: " + proxyResponse.getRequest() + proxyResponse.toString());
 			// System.out.println(Thread.currentThread().getId());
 		}
@@ -123,40 +127,60 @@ public class MyProxyServlet extends AsyncProxyServlet {
 		long tmpsum=0;
 		long intervalAverage=0;
 		double intervalStandardDeviation=0;
+		Date d= new Date();
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String dateNowStr = sdf.format(d);
+		String dateStr = "E:\\jetty_mec\\timeinterval\\"+dateNowStr.split("\\s+")[0];
+		File f = new File(dateStr);
+		
+		if(!f.exists())
+		{
+			try {
+				f.createNewFile(); // 文件的创建，注意与文件夹创建的区别  
+				           } catch (IOException e) {  
+				                // TODO Auto-generated catch block 
+				        	   e.printStackTrace();  
+				           }  
+		}
+			
 		if(!hashMapAdrr.containsKey(addr))
 			hashMapAdrr.put(addr, new ArrayList());
-		if (getRequestURL.split("\\.")[getRequestURL.split("\\.").length - 1].indexOf("4") != -1) {
-			if((getRequestURL.split("\\.")[0].split("_")[1]).indexOf("p")!=-1)
+		
+		if (getRequestURL.split("\\.")[getRequestURL.split("\\.").length - 1].indexOf("4") != -1&&(getRequestURL.split("\\.")[0].split("_")[1]).indexOf("p")!=-1) 
 			{
 			num++;
 			if(num%2==1)
 				Timestamp1=System.currentTimeMillis( );
 			else 
 				Timestamp2=System.currentTimeMillis( );
+			if(num!=1)
+			{
 				if(Timestamp1-Timestamp2>=0)
-					{timeInterval=Timestamp1-Timestamp2;
-					System.out.println("timeInterval: "+ timeInterval);
-					if(timeInterval<5000)
-						{hashMapAdrr.get(addr).add(timeInterval);
-					    intervalList.add(timeInterval);}
-					    }
+					timeInterval=Timestamp1-Timestamp2;
 				else
-					{timeInterval=Timestamp2-Timestamp1;
-					System.out.println("timeInterval: "+ timeInterval);
-					if(timeInterval<5000)
-						{hashMapAdrr.get(addr).add(timeInterval);
-					    intervalList.add(timeInterval);}
-					    }
+					timeInterval=Timestamp2-Timestamp1;
+				if(timeInterval<50000)
+				{
+				System.out.println(getRequestURL + "timeInterval: " + timeInterval);
+				hashMapAdrr.get(addr).add(timeInterval);
+			    intervalList.add(timeInterval);}
+			    }
 			}
-			}
+		
 		if(hashMapAdrr.get(addr).size()>=3)
 		{
 			System.out.println(addr +" list");
+			try {
+				FileWriter fileWriter = new FileWriter(f,true);
 			for (int i=0;i<hashMapAdrr.get(addr).size();i++) {      
 		        System.out.println(hashMapAdrr.get(addr).get(i));
+		        String strItems=hashMapAdrr.get(addr).get(i).toString();
+		        fileWriter.write(addr+" | "); 
+		        fileWriter.write(strItems+"\r\n");  
 		     }
+			fileWriter.close(); 
+			
 			List<Long> tmplist=hashMapAdrr.get(addr);
-
 			if(tmplist.get(0)>3000&&tmplist.get(1)>3000&&tmplist.get(2)>3000)
 			{
 			state=1;
@@ -168,7 +192,11 @@ public class MyProxyServlet extends AsyncProxyServlet {
 			System.out.println("change state："+state);
 			hashMapAdrr.get(addr).clear();
 			System.out.println("addr list size"+hashMapAdrr.get(addr).size());
+				}catch (IOException e) {
+					e.printStackTrace();  
+					// TODO: handle exception
 				}
+		}
 			/*if(intervalList.size()==3)
 			{
 				System.out.println("intervalList");
@@ -297,7 +325,7 @@ public class MyProxyServlet extends AsyncProxyServlet {
 		List<String> fileNameList = new ArrayList<>();
 		if(state==0)
 		{
-			System.out.println("此時多載4個");
+			System.out.println("此时多载4个");
 		if (fileName.split("\\.")[1].equals("mp4")) {
 			fileNameList.add(fileName);
 			for (int i = 1; i <= 3; i++) {
@@ -342,7 +370,7 @@ public class MyProxyServlet extends AsyncProxyServlet {
 		}
 		else
 		{
-			System.out.println("此時多載2個");
+			System.out.println("此时多载2个");
 			if (fileName.split("\\.")[1].equals("mp4")) {
 				fileNameList.add(fileName);
 				fileNameList.add(fileName.split("\\.")[0].split("_")[0] + "_" + fileName.split("\\.")[0].split("_")[1]
