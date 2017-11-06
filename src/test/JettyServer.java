@@ -52,7 +52,7 @@ public class JettyServer {
                 + context.getServer().hashCode());
         System.out.println("Server:" + server.hashCode());
         server.join();*/
-    	Server server = new Server(8885);
+    	Server server = new Server(8884);
     	
     	  ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
           context.setContextPath("/");

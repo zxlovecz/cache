@@ -36,7 +36,7 @@ public class MyProxyServlet extends AsyncProxyServlet {
 	static HashMap<String, Integer> hashMapFilePopularity = new HashMap<>();
 	static HashMap<String, Long> hashMapFileLatestTime = new HashMap<>();
 	static HashMap<String, List> hashMapAdrr = new HashMap<>();
-	String urlForDL = "http://10.108.147.170:8080/bbb/";
+	String urlForDL = "http://10.108.144.177:8080/bbb/";
 	/*String urlForDL = "http://localhost:8080/Dash_test/";*/
 	String urlForCache = "http://localhost:8080/cache/";
 	String downloadPath = "F:\\apache-tomcat-8.5.23-windows-x64\\apache-tomcat-8.5.23\\webapps\\cache";
