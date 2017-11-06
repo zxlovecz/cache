@@ -39,8 +39,12 @@ public class MyProxyServlet extends AsyncProxyServlet {
 	String urlForDL = "http://10.108.144.177:8080/bbb/";
 	/*String urlForDL = "http://localhost:8080/Dash_test/";*/
 	String urlForCache = "http://localhost:8080/cache/";
-	String downloadPath = "F:\\apache-tomcat-8.5.23-windows-x64\\apache-tomcat-8.5.23\\webapps\\cache";
-	String logPath = "E:\\jetty_mec\\logs";
+	//String downloadPath = "F:\\apache-tomcat-8.5.23-windows-x64\\apache-tomcat-8.5.23\\webapps\\cache";
+	//String logPath = "E:\\jetty_mec\\logs";
+	
+	String downloadPath = "D:\\Program Files\\apache-tomcat-8.5.5\\webapps\\cache";
+	String logPath = "C:\\Users\\Administrator\\Documents\\GitHub\\cache\\logs";
+	
 	static long totalCacheBytes = 0;
 	boolean fileFlag = true;
 	long Timestamp1;
@@ -94,7 +98,7 @@ public class MyProxyServlet extends AsyncProxyServlet {
 						if (getRequestURL.split("\\.")[getRequestURL.split("\\.").length - 1].indexOf("4") != -1) {
 							/*getInternetRes("F:\\apache-tomcat-8.5.23-windows-x64\\apache-tomcat-8.5.23\\webapps\\cache", return_URL,
 								getRequestURL);*/
-							prefetchRes("F:\\apache-tomcat-8.5.23-windows-x64\\apache-tomcat-8.5.23\\webapps\\cache", urlForDL,
+							prefetchRes(downloadPath, urlForDL,
 									getRequestURL,state);
 							
 						}
@@ -130,7 +134,10 @@ public class MyProxyServlet extends AsyncProxyServlet {
 		Date d= new Date();
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		String dateNowStr = sdf.format(d);
-		String dateStr = "E:\\jetty_mec\\timeinterval\\"+dateNowStr.split("\\s+")[0];
+	//	String dateStr = "E:\\jetty_mec\\timeinterval\\"+dateNowStr.split("\\s+")[0];
+		
+		String dateStr = "C:\\Users\\Administrator\\Documents\\GitHub\\cache\\logs\\"+"timeInterval_"+dateNowStr.split("\\s+")[0];
+		
 		File f = new File(dateStr);
 		
 		if(!f.exists())
